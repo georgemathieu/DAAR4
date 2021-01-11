@@ -1,6 +1,12 @@
 # DAAR4
 M2 STL DAAR project 4
 
+
+# Setup Spring API
+in "daar" directory : 
+* mvn spring-boot:run
+L'API se lance sur le port 8081
+
 # Setup complet API
 * sudo apt install python3-pip
 * python3 -m venv myTidyVEnv
