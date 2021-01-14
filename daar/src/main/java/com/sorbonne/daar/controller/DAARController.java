@@ -17,6 +17,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sorbonne.daar.utils.graph.GsonManager;
+import com.sorbonne.daar.utils.graph.Jaccard;
 
 @CrossOrigin
 @RestController
@@ -40,23 +42,44 @@ public class DAARController {
 		String res = rt.getForObject(gutendexUrl + "books/", String.class);
 		
 		JsonObject jo = gson.fromJson(res, JsonObject.class);
-		JsonArray ja = jo.getAsJsonArray("results");
-		JsonArray urlList = new JsonArray();
-		ja.forEach(a -> {
-			JsonElement el = a.getAsJsonObject().getAsJsonObject("formats").get("text/plain");
-			if (el != null) {
-				urlList.add(el);
-			} else if ((el = a.getAsJsonObject().getAsJsonObject("formats").get("text/plain; charset=utf-8")) != null) {
-				urlList.add(el);
-			} else if ((el = a.getAsJsonObject().getAsJsonObject("formats").get("text/plain; charset=us-ascii")) != null) {
-				urlList.add(el);
-			}
-		});
 		
-		return ResponseEntity.ok(urlList.toString());
+		GsonManager.getBookContent(jo);
+		
 		// to get content (directly calls the gutenberg file) :
-		// return ResponseEntity.ok(rt.getForObject(urlList.get(0).getAsString(), String.class));
+		return ResponseEntity.ok(GsonManager.getBookContent(jo));
 		
+	}
+	
+	/**
+	 * Jaccard Test
+	 */
+	@GetMapping("/jaccardTest")
+	@ResponseBody
+	public ResponseEntity<String> testJaccard() throws JsonMappingException, JsonProcessingException, ParseException {
+		
+		RestTemplate rt = new RestTemplate();
+		String text1 = rt.getForObject(gutendexUrl + "books/1", String.class);
+		String text2 = rt.getForObject(gutendexUrl + "books/2", String.class);
+		
+		JsonObject jo1 = gson.fromJson(text1, JsonObject.class);
+		JsonObject jo2 = gson.fromJson(text2, JsonObject.class);
+		
+		return ResponseEntity.ok(Jaccard.distanceJaccard(GsonManager.getBookContent(jo1), GsonManager.getBookContent(jo2)).toString());
+	}
+	
+	/**
+	 * Jaccard Test
+	 */
+	@GetMapping("/jaccardTest1")
+	@ResponseBody
+	public ResponseEntity<String> testJaccard1() throws JsonMappingException, JsonProcessingException, ParseException {
+		
+		RestTemplate rt = new RestTemplate();
+		String text1 = rt.getForObject(gutendexUrl + "books/1", String.class);
+		
+		JsonObject jo1 = gson.fromJson(text1, JsonObject.class);
+		
+		return ResponseEntity.ok(Jaccard.distanceJaccard(GsonManager.getBookContent(jo1), GsonManager.getBookContent(jo1)).toString());
 	}
 	
 	
