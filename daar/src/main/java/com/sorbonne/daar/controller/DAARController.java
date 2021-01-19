@@ -1,5 +1,7 @@
 package com.sorbonne.daar.controller;
 
+import java.io.IOException;
+
 import org.apache.tomcat.util.json.ParseException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,10 +33,11 @@ public class DAARController {
 	
 	/**
 	 * Get a book from a keyword
+	 * @throws IOException 
 	 */
 	@GetMapping("/search/{content}")
 	@ResponseBody
-	public ResponseEntity<String> searchAllBooks(@PathVariable String content) throws JsonMappingException, JsonProcessingException, ParseException {
+	public ResponseEntity<String> searchAllBooks(@PathVariable String content) throws ParseException, IOException {
 		
 		// not ready, testing stuff 
 		
@@ -43,19 +46,21 @@ public class DAARController {
 		
 		JsonObject jo = gson.fromJson(res, JsonObject.class);
 		
-		GsonManager.getBookContent(jo);
+		GsonManager.getBookContentURL(jo);
 		
 		// to get content (directly calls the gutenberg file) :
-		return ResponseEntity.ok(GsonManager.getBookContent(jo));
+		return ResponseEntity.ok(GsonManager.getBookContent(
+				GsonManager.getBookContentURL(jo)));
 		
 	}
 	
 	/**
 	 * Jaccard Test
+	 * @throws IOException 
 	 */
 	@GetMapping("/jaccardTest")
 	@ResponseBody
-	public ResponseEntity<String> testJaccard() throws JsonMappingException, JsonProcessingException, ParseException {
+	public ResponseEntity<String> testJaccard() throws ParseException, IOException {
 		
 		RestTemplate rt = new RestTemplate();
 		String text1 = rt.getForObject(gutendexUrl + "books/1", String.class);
@@ -64,22 +69,9 @@ public class DAARController {
 		JsonObject jo1 = gson.fromJson(text1, JsonObject.class);
 		JsonObject jo2 = gson.fromJson(text2, JsonObject.class);
 		
-		return ResponseEntity.ok(Jaccard.distanceJaccard(GsonManager.getBookContent(jo1), GsonManager.getBookContent(jo2)).toString());
-	}
-	
-	/**
-	 * Jaccard Test
-	 */
-	@GetMapping("/jaccardTest1")
-	@ResponseBody
-	public ResponseEntity<String> testJaccard1() throws JsonMappingException, JsonProcessingException, ParseException {
-		
-		RestTemplate rt = new RestTemplate();
-		String text1 = rt.getForObject(gutendexUrl + "books/1", String.class);
-		
-		JsonObject jo1 = gson.fromJson(text1, JsonObject.class);
-		
-		return ResponseEntity.ok(Jaccard.distanceJaccard(GsonManager.getBookContent(jo1), GsonManager.getBookContent(jo1)).toString());
+		return ResponseEntity.ok(Jaccard.distanceJaccard(
+				GsonManager.getBookContent(GsonManager.getBookContentURL(jo1)), 
+				GsonManager.getBookContent(GsonManager.getBookContentURL(jo2))).toString());
 	}
 	
 	
