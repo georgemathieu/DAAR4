@@ -103,7 +103,7 @@ public class Jaccard {
 	/**
 	 * Read the content of a file
 	 */
-	private static String readFile(String path, int i, Charset encoding) throws IOException {
+	public static String readFile(String path, int i, Charset encoding) throws IOException {
 		byte[] encoded = Files.readAllBytes(Paths.get(path + File.separator + i + ".txt"));
 		return new String(encoded, encoding);
 	}
