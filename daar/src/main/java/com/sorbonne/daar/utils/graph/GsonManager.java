@@ -1,6 +1,7 @@
 package com.sorbonne.daar.utils.graph;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.client.RestTemplate;
@@ -27,6 +28,24 @@ public class GsonManager {
 		return plainText.getAsString();
 	}
 	
+	/** Get the book title
+	 * @throws IOException */
+	public static String getBookTitle(JsonObject jo) throws IOException {
+		JsonElement el = jo.getAsJsonPrimitive("title");
+		return el.getAsString();
+	}
+	
+	/** Get the book authors
+	 * @throws IOException */
+	public static ArrayList<String> getBookAuthors(JsonObject jo) {
+		ArrayList<String> bookAuthors = new ArrayList<String>();
+		JsonArray ar = jo.getAsJsonArray("authors");
+			ar.forEach(a -> {
+				bookAuthors.add(a.getAsJsonObject().get("name").getAsString());
+			} );
+		return bookAuthors;
+	}
+	
 	/** returns the content of a book based on his url */
 	public static String getBookContent(String url) {
 		RestTemplate rt = new RestTemplate();
@@ -51,5 +70,7 @@ public class GsonManager {
 
 		return urlList;
 	}
+
+	
 
 }
