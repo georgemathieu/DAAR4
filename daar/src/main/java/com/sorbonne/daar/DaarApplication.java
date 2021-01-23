@@ -23,7 +23,7 @@ public class DaarApplication {
 	public static HashMap<String, List<Integer>> keywords;
 	public static HashMap<String, Integer> titles;
 	public static HashMap<String, List<Integer>> authors;
-	public static Float[][] jaccard;
+	public static HashMap<Integer, Float> closeness;
 	
 	private static final Logger LOGGER  = LoggerFactory.getLogger(DaarApplication.class);
 
@@ -44,11 +44,11 @@ public class DaarApplication {
 		ois.close();
 		LOGGER.info("Authors loaded");
 		
-		/*ois = new ObjectInputStream(new FileInputStream("jaccard.ser"));
-		JaccardMatrice jmIN = (JaccardMatrice) ois.readObject();
+		ois = new ObjectInputStream(new FileInputStream("closeness.ser"));
+		HashMap<Integer, Float> map = (HashMap<Integer, Float>) ois.readObject();
 		ois.close();
-		jaccard = jmIN.getJaccardMatrice();
-		LOGGER.info("Jaccard loaded");*/
+		closeness = map;
+		LOGGER.info("Closeness graph loaded");
 		
 		SpringApplication.run(DaarApplication.class, args);
 	}

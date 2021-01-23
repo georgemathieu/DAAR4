@@ -46,8 +46,8 @@ public class BookService {
 	public Set<Integer> getRelatedBooksKeywords(String keyword){
 		// We use a hashset to remove duplicates
 		Set<Integer> ids = new HashSet<>();
-		// A reflechir
-		/*for (String kwFromDB : DaarApplication.keywords.keySet()) {
+		
+		for (String kwFromDB : DaarApplication.keywords.keySet()) {
 			// the serialized keywords are stem, we need to compare in both directions
 			if(keyword.contains(kwFromDB.toLowerCase())) {
 				ids.addAll(DaarApplication.keywords.get(kwFromDB));
@@ -55,7 +55,7 @@ public class BookService {
 			if(kwFromDB.toLowerCase().contains(keyword)) {
 				ids.addAll(DaarApplication.keywords.get(kwFromDB));
 			}
-		}*/
+		}
 		return ids;
 	}
 

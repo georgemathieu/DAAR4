@@ -6,15 +6,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.ReadOnlyFileSystemException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +23,6 @@ import org.springframework.web.client.RestTemplate;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class Jaccard {
@@ -151,6 +149,34 @@ public class Jaccard {
 		}
 	}
 	
+	/**
+	 * Build a jaccard graph if the distance between 2 nodes is <= 0.5
+	 */
+	private static void buildClosenessCentrality() throws FileNotFoundException, IOException, ClassNotFoundException {
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream("jaccard.ser"));
+		JaccardMatrice jmIN = (JaccardMatrice) ois.readObject();
+		ois.close();
+		
+		Float[][] jArray = jmIN.getJaccardMatrice();
+		
+		HashMap<Integer, Float> closeness = new HashMap<>();
+		
+		for (int i = 0; i < jArray.length; i++) {
+			Float sum = 0f;
+			for (int j = 0; j < jArray.length; j++) {
+				sum += jArray[i][j];
+			}
+			closeness.put(i, (1/sum) );
+		}
+		
+		closeness = (HashMap<Integer, Float>) MapUtil.sortByValue(closeness);
+		
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("closeness.ser"));
+		oos.writeObject(closeness);
+		oos.flush();
+		oos.close();
+	}
+	
 		
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
@@ -160,10 +186,15 @@ public class Jaccard {
 		// Computes the entire jaccard distance matrix
 		//buildJaccardMatrice();
 		
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream("jaccard.ser"));
-		JaccardMatrice jmIN = (JaccardMatrice) ois.readObject();
-		ois.close();
+		// Creates the closeness map using the jaccard graph
+		//buildClosenessCentrality();
 		
-		System.out.println(jmIN.toString());
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream("closeness.ser"));
+		HashMap<Integer, Float> map = (HashMap<Integer, Float>) ois.readObject();
+		ois.close();
+		for (Integer i : map.keySet()) {
+			System.out.println(i + " -> " + map.get(i));
+		}
+		
 	}
 }

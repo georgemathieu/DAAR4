@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.tomcat.util.json.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -25,6 +28,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sorbonne.daar.DaarApplication;
 import com.sorbonne.daar.services.BookService;
 import com.sorbonne.daar.utils.graph.GsonManager;
 import com.sorbonne.daar.utils.graph.Jaccard;
@@ -37,24 +41,79 @@ public class DAARController {
 	private final String gutendexUrl = "https://gutendex.com/";
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
+	private static final Logger LOGGER  = LoggerFactory.getLogger(DAARController.class);
+	
 	@Autowired
     private BookService bookService = new BookService();
 	
 	
 	/**
-	 * Get a book from a keyword
+	 * Get a book from keyword
 	 * @throws IOException 
 	 */
 	@GetMapping("/basicsearch/{content}")
 	@ResponseBody
 	public ResponseEntity<Set<Integer>> basicSearch(@PathVariable String content) throws ParseException, IOException {
+		LOGGER.info("Searching for basic : " + content);
 		
 		String[] keywords = content.split("\\s+");
+		Set<Integer> ids = new LinkedHashSet<>();
+		Arrays.asList(keywords).forEach(k -> {
+			ids.addAll(bookService.getRelatedBooksKeywords(k.toLowerCase()));
+		});
+		
+		return ResponseEntity.ok(ids);
+	}
+	
+	/**
+	 * Get a book from keyword
+	 * @throws IOException 
+	 */
+	@GetMapping("/advancedsearch/{content}")
+	@ResponseBody
+	public ResponseEntity<Set<Integer>> advancedSearch(@PathVariable String regex) throws ParseException, IOException {
+		LOGGER.info("Searching for advanced : " + regex);
+		//TODO
+		String[] keywords = regex.split("\\s+");
+		Set<Integer> ids = new LinkedHashSet<>();
+		Arrays.asList(keywords).forEach(k -> {
+			ids.addAll(bookService.getRelatedBooksKeywords(k.toLowerCase()));
+		});
+		
+		return ResponseEntity.ok(ids);
+	}
+	
+	/**
+	 * Get books from a title
+	 * @throws IOException 
+	 */
+	@GetMapping("/titlesearch/{title}")
+	@ResponseBody
+	public ResponseEntity<Set<Integer>> titleSearch(@PathVariable String title) throws ParseException, IOException {
+		LOGGER.info("Searching for title : " + title);
+		
+		String[] keywords = title.split("\\s+");
 		Set<Integer> ids = new HashSet<>();
 		Arrays.asList(keywords).forEach(k -> {
 			ids.addAll(bookService.getRelatedBooksByTitle(k.toLowerCase()));
+		});
+		
+		return ResponseEntity.ok(ids);
+	}
+	
+	/**
+	 * Get books from an author
+	 * @throws IOException 
+	 */
+	@GetMapping("/authorsearch/{author}")
+	@ResponseBody
+	public ResponseEntity<Set<Integer>> authorSearch(@PathVariable String author) throws ParseException, IOException {
+		LOGGER.info("Searching for author : " + author);
+		
+		String[] keywords = author.split("\\s+");
+		Set<Integer> ids = new HashSet<>();
+		Arrays.asList(keywords).forEach(k -> {
 			ids.addAll(bookService.getRelatedBooksByAuthor(k.toLowerCase()));
-			ids.addAll(bookService.getRelatedBooksKeywords(k.toLowerCase()));
 		});
 		
 		return ResponseEntity.ok(ids);
