@@ -1,8 +1,14 @@
 package com.sorbonne.daar.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.tomcat.util.json.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +25,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sorbonne.daar.services.BookService;
 import com.sorbonne.daar.utils.graph.GsonManager;
 import com.sorbonne.daar.utils.graph.Jaccard;
 
@@ -30,28 +37,27 @@ public class DAARController {
 	private final String gutendexUrl = "https://gutendex.com/";
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
+	@Autowired
+    private BookService bookService = new BookService();
+	
 	
 	/**
 	 * Get a book from a keyword
 	 * @throws IOException 
 	 */
-	@GetMapping("/search/{content}")
+	@GetMapping("/basicsearch/{content}")
 	@ResponseBody
-	public ResponseEntity<String> searchAllBooks(@PathVariable String content) throws ParseException, IOException {
+	public ResponseEntity<Set<Integer>> basicSearch(@PathVariable String content) throws ParseException, IOException {
 		
-		// not ready, testing stuff 
+		String[] keywords = content.split("\\s+");
+		Set<Integer> ids = new HashSet<>();
+		Arrays.asList(keywords).forEach(k -> {
+			ids.addAll(bookService.getRelatedBooksByTitle(k.toLowerCase()));
+			ids.addAll(bookService.getRelatedBooksByAuthor(k.toLowerCase()));
+			ids.addAll(bookService.getRelatedBooksKeywords(k.toLowerCase()));
+		});
 		
-		RestTemplate rt = new RestTemplate();
-		String res = rt.getForObject(gutendexUrl + "books/", String.class);
-		
-		JsonObject jo = gson.fromJson(res, JsonObject.class);
-		
-		GsonManager.getBookContentURL(jo);
-		
-		// to get content (directly calls the gutenberg file) :
-		return ResponseEntity.ok(GsonManager.getBookContent(
-				GsonManager.getBookContentURL(jo)));
-		
+		return ResponseEntity.ok(ids);
 	}
 	
 	/**
@@ -177,5 +183,4 @@ public class DAARController {
 		
 	}
 	
-
 }
