@@ -1,13 +1,17 @@
 package com.sorbonne.daar.services;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.sorbonne.daar.DaarApplication;
+import com.sorbonne.daar.controller.DAARController;
 
 @Service
 public class BookService {
@@ -58,5 +62,12 @@ public class BookService {
 		}
 		return ids;
 	}
-
+	
+	/**
+	 * Order the ids of a result Set based on the closeness graph
+	 */
+	public void orderResults(List<Integer> ids) {
+		List<Integer> orderedIndexes = new ArrayList<>(DaarApplication.closeness.keySet());
+		Collections.sort(ids, Comparator.comparing(id -> orderedIndexes.indexOf(id)));
+	}
 }

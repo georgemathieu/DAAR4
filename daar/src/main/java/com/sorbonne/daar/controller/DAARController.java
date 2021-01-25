@@ -53,7 +53,7 @@ public class DAARController {
 	 */
 	@GetMapping("/basicsearch/{content}")
 	@ResponseBody
-	public ResponseEntity<Set<Integer>> basicSearch(@PathVariable String content) throws ParseException, IOException {
+	public ResponseEntity<List<Integer>> basicSearch(@PathVariable String content) throws ParseException, IOException {
 		LOGGER.info("Searching for basic : " + content);
 		
 		String[] keywords = content.split("\\s+");
@@ -61,8 +61,9 @@ public class DAARController {
 		Arrays.asList(keywords).forEach(k -> {
 			ids.addAll(bookService.getRelatedBooksKeywords(k.toLowerCase()));
 		});
-		
-		return ResponseEntity.ok(ids);
+		List<Integer> idsAsList = new ArrayList<>(ids);
+		bookService.orderResults(idsAsList);
+		return ResponseEntity.ok(idsAsList);
 	}
 	
 	/**
@@ -89,7 +90,7 @@ public class DAARController {
 	 */
 	@GetMapping("/titlesearch/{title}")
 	@ResponseBody
-	public ResponseEntity<Set<Integer>> titleSearch(@PathVariable String title) throws ParseException, IOException {
+	public ResponseEntity<List<Integer>> titleSearch(@PathVariable String title) throws ParseException, IOException {
 		LOGGER.info("Searching for title : " + title);
 		
 		String[] keywords = title.split("\\s+");
@@ -97,8 +98,9 @@ public class DAARController {
 		Arrays.asList(keywords).forEach(k -> {
 			ids.addAll(bookService.getRelatedBooksByTitle(k.toLowerCase()));
 		});
-		
-		return ResponseEntity.ok(ids);
+		List<Integer> idsAsList = new ArrayList<>(ids);
+		bookService.orderResults(idsAsList);
+		return ResponseEntity.ok(idsAsList);
 	}
 	
 	/**
@@ -107,7 +109,7 @@ public class DAARController {
 	 */
 	@GetMapping("/authorsearch/{author}")
 	@ResponseBody
-	public ResponseEntity<Set<Integer>> authorSearch(@PathVariable String author) throws ParseException, IOException {
+	public ResponseEntity<List<Integer>> authorSearch(@PathVariable String author) throws ParseException, IOException {
 		LOGGER.info("Searching for author : " + author);
 		
 		String[] keywords = author.split("\\s+");
@@ -115,8 +117,9 @@ public class DAARController {
 		Arrays.asList(keywords).forEach(k -> {
 			ids.addAll(bookService.getRelatedBooksByAuthor(k.toLowerCase()));
 		});
-		
-		return ResponseEntity.ok(ids);
+		List<Integer> idsAsList = new ArrayList<>(ids);
+		bookService.orderResults(idsAsList);
+		return ResponseEntity.ok(idsAsList);
 	}
 	
 	/**
