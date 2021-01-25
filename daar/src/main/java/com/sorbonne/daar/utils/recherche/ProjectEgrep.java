@@ -10,8 +10,12 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.sorbonne.daar.DaarApplication;
+import com.sorbonne.daar.utils.keywords.MotsClesExtractor;
 
 public class ProjectEgrep {
 	// MACROS
@@ -41,67 +45,28 @@ public class ProjectEgrep {
 	public ProjectEgrep() {
 	}
 	
-	// MAIN
-	public static void main(String arg[]) throws Exception {
-		
-		regEx = arg[0];
-		//regEx = "Semitic('s)*";
-		//regEx = "S(a|r|g)+on";
-		//regEx = " h(e|is) ";
-		//regEx = "Sargon";
-		//regEx = " his ";
-		
-		// mettre en commentaire pour virer executer normalement
-//		if(true) {
-//			buildCSV();
-//			return;
-//		}
-		
-		//String fileName = "2.txt";
-		String fileName = arg[1];
-		long fileSize = (new File(fileName)).length();
-		ArrayList<String> lineList = new ArrayList<>();
+	/**
+	 * Research books using regex and aho-ullman algorithm
+	 */
+	public static List<Integer> advancedResearch(String regex) throws Exception {
+		regEx = regex;
+		List<Integer> ids = new ArrayList<>();
 		
 		if(isConcatenated(regEx)) {
 			// KMP
-			beginTime = System.currentTimeMillis();
-			lineList = kmp(regEx, fileName);
-			endTime = System.currentTimeMillis();
-			long kmpTime = endTime - beginTime;
-			System.out.println("KMP");
-			for (String string : lineList) {
-				System.out.println(string);
-			}
-			System.out.println("nb lines : " + lineList.size());
-			System.out.println("Execution time using KMP : " + kmpTime + " ms");
-			return;
+			regEx = MotsClesExtractor.stem(regEx);
+			ids = kmp(regEx, DaarApplication.keywords);
+			return ids;
 		}
-		
 		//regExTree
 		RegExTree ret = parse();
-		//System.out.println(ret.toString());
 		
 		//nfa
 		NFA nfa = toAutomaton(parse());
-		//nfa.print();
 		
 		//dfa
 		DFA dfa = toDFA(nfa);
 		dfa.buildNumbers(allStates);
-		//dfa.print();
-		
-		// DFA Search
-//		beginTime = System.currentTimeMillis();
-//		lineList = searchText(dfa, fileName);
-//		endTime = System.currentTimeMillis();
-//		long DFAtime = endTime - beginTime;
-//		System.out.println("lines : ");
-//		System.out.println("nb lines : " + lineList.size());
-//		for (String string : lineList) {
-//			System.out.println(string);
-//		}
-//		System.out.println("Temps d'execution non-optimized : " + DFAtime + " ms");
-//		System.out.println();
 				
 		//Minimization
 		ArrayList<ArrayList<DFAState>> partions = new ArrayList<ArrayList<DFAState>>(); 
@@ -112,22 +77,14 @@ public class ProjectEgrep {
 		DFA minimizedDfa = DfaMinimization(dfa, partions);
 		compteurDFA=0;
 		minimizedDfa.buildNumbers(allStates);
-		//minimizedDfa.print();
 		
 		// Minimized DFA, Research in the text
-		lineList = new ArrayList<>();
-		beginTime = System.currentTimeMillis();
-		lineList = searchText(minimizedDfa, fileName);
-		endTime = System.currentTimeMillis();
-		long minimizedDFAtime = endTime - beginTime;
-		for (String string : lineList) {
-			System.out.println(string);
-		}
-		System.out.println("" + lineList.size() + " lines");
-		System.out.println("Execution time using minimized DFA: " + minimizedDFAtime + " ms");
-		System.out.println();
-		
+		ids = new ArrayList<>();
+		ids = searchText(minimizedDfa, DaarApplication.keywords);
+		return ids;
 	}
+	
+	
 
 	// FROM REGEX TO SYNTAX TREE
 	private static RegExTree parse() throws Exception {
@@ -755,43 +712,37 @@ public class ProjectEgrep {
 	 * @param fileName, the name of the file we're searching (should be in current directory)
 	 * @return the lines matching the DFA
 	 */
-	private static ArrayList<String> searchText(DFA A, String fileName) {
-		ArrayList<String> lines = new ArrayList<>();
-		
-		try(BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fileName)), "UTF-8"))){
-			for (String line; (line = br.readLine()) != null; ) 
-			{
-				DFAState current = null;
-				for (int i = 0; i < line.length(); i++) 
-				{
-					current = A.start_state;
-					boolean foundWord = false;
-					for (int j = i; j < line.length(); j++) 
-					{
-						// if the current state is null, that means that the 
-						// current word doesn't match the DFA so we quit the loop
-						if (A.arcs.get(current) != null) 
-						{
-							current = A.arcs.get(current).get((int) line.charAt(j));
-							current = getTrueState(A, current);
-							// if the current state is in the end_state array, that means that the 
-							// current word does match the DFA, so we add the line to the list
-							if (current != null && A.end_state.contains(current)) 
-							{
-								lines.add(line);
-								foundWord = true;
-								break;
-							}
-						} else { break;}
+	private static List<Integer> searchText(DFA A, HashMap<String, List<Integer>> keywords) {
+		List<Integer> ids = new ArrayList<>();
+
+		for (String keyword : keywords.keySet()) {
+			DFAState current = null;
+			for (int i = 0; i < keyword.length(); i++) {
+				current = A.start_state;
+				boolean foundWord = false;
+				for (int j = i; j < keyword.length(); j++) {
+					// if the current state is null, that means that the
+					// current word doesn't match the DFA so we quit the loop
+					if (A.arcs.get(current) != null) {
+						current = A.arcs.get(current).get((int) keyword.charAt(j));
+						current = getTrueState(A, current);
+						// if the current state is in the end_state array, that means that the
+						// current word does match the DFA, so we add the line to the list
+						if (current != null && A.end_state.contains(current)) {
+							ids.addAll(keywords.get(keyword));
+							foundWord = true;
+							break;
+						}
+					} else {
+						break;
 					}
-					if (foundWord) break;
 				}
+				if (foundWord)
+					break;
 			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		return lines;
+
+		return ids;
 	}
 	
 	/**
@@ -813,45 +764,41 @@ public class ProjectEgrep {
 		return state;
 	}
 	
-	private static ArrayList<String> kmp(String pattern, String fileName) {
-		ArrayList<String> lines = new ArrayList<>();
-		
+	/**
+	 * KMP algorithm, searches books with keywords following a pattern
+	 */
+	private static ArrayList<Integer> kmp(String pattern, HashMap<String, List<Integer>> keywords) {
+		ArrayList<Integer> ids = new ArrayList<>();
+
 		int carryOver[] = new int[pattern.length()];
-		
+
 		buildCarryOver(pattern, carryOver);
-		
-		try(BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(fileName)), "UTF-8"))){
-			for (String line; (line = br.readLine()) != null; ) 
-			{
-				int i = 0;
-				int compteur = 0;
-				while (i < line.length())
-				{
-					if (pattern.charAt(compteur) == line.charAt(i)) {
+
+		for (String keyword : keywords.keySet()) {
+			int i = 0;
+			int compteur = 0;
+			while (i < keyword.length()) {
+				if (pattern.charAt(compteur) == keyword.charAt(i)) {
+					i++;
+					compteur++;
+				}
+				if (compteur == pattern.length()) {
+					// found matching word
+					ids.addAll(keywords.get(keyword));
+					break;
+					// compteur = carryOver[compteur - 1];
+				} else if (i < keyword.length() && pattern.charAt(compteur) != keyword.charAt(i)) {
+					if (compteur != 0) {
+						compteur = carryOver[compteur - 1];
+					} else {
 						i++;
-						compteur++;
-					}
-					if(compteur == pattern.length()) {
-						// found matching word
-						lines.add(line);
-						break;
-						//compteur = carryOver[compteur - 1];
-					}
-					else if (i < line.length() && pattern.charAt(compteur) != line.charAt(i)) {
-						if (compteur != 0) {
-							compteur = carryOver[compteur-1];
-						} else {
-							i++;
-						}
 					}
 				}
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		
-		return lines;
-		
+
+		return ids;
+
 	}
 	
 	private static void buildCarryOver(String pattern, int[] carryOver) {
@@ -877,92 +824,6 @@ public class ProjectEgrep {
 				}
 			}
 		}
-	}
-	
-	private static void buildCSV() throws Exception {
-		
-		try (PrintWriter writer = new PrintWriter(new File("daar2.csv"))) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("File length");
-			sb.append(',');
-			sb.append("Non-optimized DFA search Time");
-			sb.append(',');
-			sb.append("Optimized DFA search Time");
-			sb.append(',');
-			sb.append("KMP search Time");
-			sb.append('\n');
-			writer.write(sb.toString());
-			
-			//regExTree
-			RegExTree ret = parse();
-			
-			//nfa
-			NFA nfa = toAutomaton(parse());
-			
-			//dfa
-			DFA dfa = toDFA(nfa);
-			dfa.buildNumbers(allStates);
-			
-			//Minimization
-			ArrayList<ArrayList<DFAState>> partions = new ArrayList<ArrayList<DFAState>>(); 
-			ArrayList<DFAState> non_final = new ArrayList<DFAState>(allStates);
-			non_final.removeAll(dfa.end_state);
-			partions.add(dfa.end_state);
-			partions.add(non_final);
-			DFA minimizedDfa = DfaMinimization(dfa, partions);
-			compteurDFA=0;
-			minimizedDfa.buildNumbers(allStates);
-			
-			for (int i = 1; i < 9; i++) {
-				
-				String fileName = "" + i + ".txt";
-				long fileSize = (new File(fileName)).length();
-				
-				// DFA Search
-				ArrayList<String> lineList = new ArrayList<>();
-				beginTime = System.currentTimeMillis();
-				lineList = searchText(dfa, fileName);
-				endTime = System.currentTimeMillis();
-				long DFAtime = endTime - beginTime;
-				System.out.println("non-optimized : " + DFAtime);
-				
-				// Minimized DFA, Research in the text
-				lineList = new ArrayList<>();
-				beginTime = System.currentTimeMillis();
-				lineList = searchText(minimizedDfa, fileName);
-				endTime = System.currentTimeMillis();
-				long minimizedDFAtime = endTime - beginTime;
-				System.out.println("optimized : " + minimizedDFAtime);
-				System.out.println();
-				
-				// KMP
-//				beginTime = System.currentTimeMillis();
-//				lineList = kmp("Sargon", fileName);
-//				endTime = System.currentTimeMillis();
-//				long kmpTime = endTime - beginTime;
-				
-				writeToCSV(writer, fileSize, DFAtime, minimizedDFAtime, 0);
-			}
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		System.out.println("done");
-	}
-	
-	private static void writeToCSV(PrintWriter writer, long fileSize, long DFATime, long minimizedDFATime,
-			long KMPTime) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(fileSize);
-		sb.append(',');
-		sb.append(DFATime);
-		sb.append(',');
-		sb.append(minimizedDFATime);
-		sb.append(',');
-		sb.append(KMPTime);
-		sb.append('\n');
-		writer.write(sb.toString());
-
 	}
 	
 	private static boolean isConcatenated(String str) {

@@ -1,6 +1,8 @@
 package com.sorbonne.daar.services;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -8,10 +10,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.sorbonne.daar.DaarApplication;
 import com.sorbonne.daar.controller.DAARController;
+import com.sorbonne.daar.utils.keywords.MotsClesExtractor;
+import com.sorbonne.daar.utils.recherche.ProjectEgrep;
 
 @Service
 public class BookService {
@@ -52,11 +58,7 @@ public class BookService {
 		Set<Integer> ids = new HashSet<>();
 		
 		for (String kwFromDB : DaarApplication.keywords.keySet()) {
-			// the serialized keywords are stem, we need to compare in both directions
-			if(keyword.contains(kwFromDB.toLowerCase())) {
-				ids.addAll(DaarApplication.keywords.get(kwFromDB));
-			}
-			if(kwFromDB.toLowerCase().contains(keyword)) {
+			if(kwFromDB.contains(keyword.toLowerCase())) {
 				ids.addAll(DaarApplication.keywords.get(kwFromDB));
 			}
 		}
@@ -69,5 +71,12 @@ public class BookService {
 	public void orderResults(List<Integer> ids) {
 		List<Integer> orderedIndexes = new ArrayList<>(DaarApplication.closeness.keySet());
 		Collections.sort(ids, Comparator.comparing(id -> orderedIndexes.indexOf(id)));
+	}
+
+	/**
+	 * Get all the books using a specific keywords using Aho-Ullman or KMP
+	 */
+	public List<Integer> advancedresearch(String regex) throws Exception {
+		return ProjectEgrep.advancedResearch(regex);
 	}
 }

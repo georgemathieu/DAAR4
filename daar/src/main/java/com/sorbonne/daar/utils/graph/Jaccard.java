@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.web.client.HttpClientErrorException;
@@ -24,6 +25,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.sorbonne.daar.utils.keywords.MotCleMap;
 
 public class Jaccard {
 	
@@ -189,11 +191,17 @@ public class Jaccard {
 		// Creates the closeness map using the jaccard graph
 		//buildClosenessCentrality();
 		
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream("closeness.ser"));
-		HashMap<Integer, Float> map = (HashMap<Integer, Float>) ois.readObject();
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream("keywords.ser"));
+		MotCleMap mcm = (MotCleMap) ois.readObject();
 		ois.close();
-		for (Integer i : map.keySet()) {
-			System.out.println(i + " -> " + map.get(i));
+		HashMap<String, List<Integer>> keywords;
+		keywords = mcm.getMotCleMap();
+		for (String str : keywords.keySet()) {
+			System.out.print(str + " -> ");
+			for (Integer i : keywords.get(str)) {
+				System.out.print(i + ", ");
+			}
+			System.out.println();
 		}
 		
 	}
