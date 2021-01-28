@@ -32,6 +32,7 @@ import com.sorbonne.daar.DaarApplication;
 import com.sorbonne.daar.services.BookService;
 import com.sorbonne.daar.utils.graph.GsonManager;
 import com.sorbonne.daar.utils.graph.Jaccard;
+import com.sorbonne.daar.utils.keywords.MotsClesExtractor;
 
 @CrossOrigin
 @RestController
@@ -59,6 +60,13 @@ public class DAARController {
 		String[] keywords = content.split("\\s+");
 		Set<Integer> ids = new LinkedHashSet<>();
 		Arrays.asList(keywords).forEach(k -> {
+			try {
+				// We get the stem of the keyword to compare it 
+				// with the words of the keyword map
+				k = MotsClesExtractor.stem(k);
+			} catch (IOException e) {
+				LOGGER.error("Error while getting the stem of the keyword");
+			}
 			ids.addAll(bookService.getRelatedBooksKeywords(k.toLowerCase()));
 		});
 		List<Integer> idsAsList = new ArrayList<>(ids);
@@ -70,18 +78,23 @@ public class DAARController {
 	 * Get a book from keyword
 	 * @throws IOException 
 	 */
-	@GetMapping("/advancedsearch/{content}")
+	@GetMapping("/advancedsearch/{regex}")
 	@ResponseBody
-	public ResponseEntity<Set<Integer>> advancedSearch(@PathVariable String regex) throws ParseException, IOException {
+	public ResponseEntity<List<Integer>> advancedSearch(@PathVariable String regex) throws ParseException, IOException {
 		LOGGER.info("Searching for advanced : " + regex);
 		//TODO
 		String[] keywords = regex.split("\\s+");
 		Set<Integer> ids = new LinkedHashSet<>();
 		Arrays.asList(keywords).forEach(k -> {
-			ids.addAll(bookService.getRelatedBooksKeywords(k.toLowerCase()));
+			try {
+				ids.addAll(bookService.advancedresearch(k.toLowerCase()));
+			} catch (Exception e) {
+				LOGGER.error("Error during advanced research");
+			}
 		});
-		
-		return ResponseEntity.ok(ids);
+		List<Integer> idsAsList = new ArrayList<>(ids);
+		bookService.orderResults(idsAsList);
+		return ResponseEntity.ok(idsAsList);
 	}
 	
 	/**
@@ -120,26 +133,6 @@ public class DAARController {
 		List<Integer> idsAsList = new ArrayList<>(ids);
 		bookService.orderResults(idsAsList);
 		return ResponseEntity.ok(idsAsList);
-	}
-	
-	/**
-	 * Jaccard Test
-	 * @throws IOException 
-	 */
-	@GetMapping("/jaccardTest")
-	@ResponseBody
-	public ResponseEntity<String> testJaccard() throws ParseException, IOException {
-		
-		RestTemplate rt = new RestTemplate();
-		String text1 = rt.getForObject(gutendexUrl + "books/1", String.class);
-		String text2 = rt.getForObject(gutendexUrl + "books/2", String.class);
-		
-		JsonObject jo1 = gson.fromJson(text1, JsonObject.class);
-		JsonObject jo2 = gson.fromJson(text2, JsonObject.class);
-		
-		return ResponseEntity.ok(Jaccard.distanceJaccard(
-				GsonManager.getBookContent(GsonManager.getBookContentURL(jo1)), 
-				GsonManager.getBookContent(GsonManager.getBookContentURL(jo2))).toString());
 	}
 	
 	
