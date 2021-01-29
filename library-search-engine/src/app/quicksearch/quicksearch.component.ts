@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-quicksearch',
@@ -33,7 +34,7 @@ export class QuicksearchComponent implements OnInit {
     }
 ]
 
-  constructor(private router: Router) { }
+  constructor(private router: Router,private httpClient: HttpClient) { }
 
 
   ngOnInit(): void {
@@ -41,6 +42,17 @@ export class QuicksearchComponent implements OnInit {
 
   onSubmit(form: NgForm): void {
     console.log(form.value);
+    this.httpClient
+      .get('http://localhost:8081/basicsearch/',form.value)
+      .subscribe(
+        (response:any) => {
+          this.results = response;
+          console.log(response);
+        },
+        (error) => {
+          console.log('Erreur ! : ' + error);
+        }
+      );
     this.shouldIDisplayResults = true;
 
   }
