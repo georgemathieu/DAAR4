@@ -6,6 +6,7 @@ import { QuicksearchComponent } from './quicksearch/quicksearch.component';
 import { AdvancedSearchComponent } from './advanced-search/advanced-search.component';
 import { AuthorSearchComponent } from './author-search/author-search.component';
 import { RouterModule, Routes } from '@angular/router';
+import { DisplayResultsComponent } from './display-results/display-results.component';
 
 const appRoutes: Routes = [
   {path:'quicksearch', component: QuicksearchComponent},
@@ -19,7 +20,8 @@ const appRoutes: Routes = [
     AppComponent,
     QuicksearchComponent,
     AdvancedSearchComponent,
-    AuthorSearchComponent
+    AuthorSearchComponent,
+    DisplayResultsComponent
   ],
   imports: [
     BrowserModule,
