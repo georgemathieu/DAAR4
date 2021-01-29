@@ -43,7 +43,7 @@ export class QuicksearchComponent implements OnInit {
   onSubmit(form: NgForm): void {
     console.log(form.value);
     this.httpClient
-      .get('http://localhost:8081/basicsearch/',form.value)
+      .get('http://localhost:8081/basicsearch/' + form.value.search)
       .subscribe(
         (response:any) => {
           this.results = response;
