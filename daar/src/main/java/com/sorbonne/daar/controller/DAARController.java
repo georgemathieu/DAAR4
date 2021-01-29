@@ -28,6 +28,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sorbonne.daar.Book;
 import com.sorbonne.daar.DaarApplication;
 import com.sorbonne.daar.services.BookService;
 import com.sorbonne.daar.utils.graph.GsonManager;
@@ -38,7 +39,6 @@ import com.sorbonne.daar.utils.keywords.MotsClesExtractor;
 @RestController
 public class DAARController {
 	
-	private final String url = "http://localhost:8000/";
 	private final String gutendexUrl = "https://gutendex.com/";
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
@@ -54,7 +54,7 @@ public class DAARController {
 	 */
 	@GetMapping("/basicsearch/{content}")
 	@ResponseBody
-	public ResponseEntity<List<Integer>> basicSearch(@PathVariable String content) throws ParseException, IOException {
+	public ResponseEntity<List<Book>> basicSearch(@PathVariable String content) throws ParseException, IOException {
 		LOGGER.info("Searching for basic : " + content);
 		
 		String[] keywords = content.split("\\s+");
@@ -71,7 +71,7 @@ public class DAARController {
 		});
 		List<Integer> idsAsList = new ArrayList<>(ids);
 		bookService.orderResults(idsAsList);
-		return ResponseEntity.ok(idsAsList);
+		return ResponseEntity.ok(bookService.getBookDataFromIdsList(idsAsList));
 	}
 	
 	/**
@@ -80,7 +80,7 @@ public class DAARController {
 	 */
 	@GetMapping("/advancedsearch/{regex}")
 	@ResponseBody
-	public ResponseEntity<List<Integer>> advancedSearch(@PathVariable String regex) throws ParseException, IOException {
+	public ResponseEntity<List<Book>> advancedSearch(@PathVariable String regex) throws ParseException, IOException {
 		LOGGER.info("Searching for advanced : " + regex);
 		//TODO
 		String[] keywords = regex.split("\\s+");
@@ -94,7 +94,7 @@ public class DAARController {
 		});
 		List<Integer> idsAsList = new ArrayList<>(ids);
 		bookService.orderResults(idsAsList);
-		return ResponseEntity.ok(idsAsList);
+		return ResponseEntity.ok(bookService.getBookDataFromIdsList(idsAsList));
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class DAARController {
 	 */
 	@GetMapping("/titlesearch/{title}")
 	@ResponseBody
-	public ResponseEntity<List<Integer>> titleSearch(@PathVariable String title) throws ParseException, IOException {
+	public ResponseEntity<List<Book>> titleSearch(@PathVariable String title) throws ParseException, IOException {
 		LOGGER.info("Searching for title : " + title);
 		
 		String[] keywords = title.split("\\s+");
@@ -113,7 +113,7 @@ public class DAARController {
 		});
 		List<Integer> idsAsList = new ArrayList<>(ids);
 		bookService.orderResults(idsAsList);
-		return ResponseEntity.ok(idsAsList);
+		return ResponseEntity.ok(bookService.getBookDataFromIdsList(idsAsList));
 	}
 	
 	/**
@@ -122,7 +122,7 @@ public class DAARController {
 	 */
 	@GetMapping("/authorsearch/{author}")
 	@ResponseBody
-	public ResponseEntity<List<Integer>> authorSearch(@PathVariable String author) throws ParseException, IOException {
+	public ResponseEntity<List<Book>> authorSearch(@PathVariable String author) throws ParseException, IOException {
 		LOGGER.info("Searching for author : " + author);
 		
 		String[] keywords = author.split("\\s+");
@@ -132,10 +132,13 @@ public class DAARController {
 		});
 		List<Integer> idsAsList = new ArrayList<>(ids);
 		bookService.orderResults(idsAsList);
-		return ResponseEntity.ok(idsAsList);
+		return ResponseEntity.ok(bookService.getBookDataFromIdsList(idsAsList));
 	}
 	
 	
+	
+	
+	////////////// TME8 BELOW, NOT USED //////////////////////////////////
 	/**
 	 * Get all the books
 	 */
@@ -167,7 +170,6 @@ public class DAARController {
 		JsonObject jo = gson.fromJson(res, JsonObject.class);
 		
 		return ResponseEntity.ok(jo.toString());
-		
 	}
 	
 	

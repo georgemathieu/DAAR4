@@ -24,6 +24,7 @@ public class DaarApplication {
 	public static HashMap<String, Integer> titles;
 	public static HashMap<String, List<Integer>> authors;
 	public static HashMap<Integer, Float> closeness;
+	public static HashMap<Integer, Book> books;
 	
 	private static final Logger LOGGER  = LoggerFactory.getLogger(DaarApplication.class);
 
@@ -45,10 +46,14 @@ public class DaarApplication {
 		LOGGER.info("Authors loaded");
 		
 		ois = new ObjectInputStream(new FileInputStream("closeness.ser"));
-		HashMap<Integer, Float> map = (HashMap<Integer, Float>) ois.readObject();
+		closeness = (HashMap<Integer, Float>) ois.readObject();
 		ois.close();
-		closeness = map;
 		LOGGER.info("Closeness graph loaded");
+		
+		ois = new ObjectInputStream(new FileInputStream("books.ser"));
+		books = (HashMap<Integer, Book>) ois.readObject();
+		ois.close();
+		LOGGER.info("Books data loaded");
 		
 		SpringApplication.run(DaarApplication.class, args);
 	}

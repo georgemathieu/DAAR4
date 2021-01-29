@@ -191,7 +191,7 @@ public class Jaccard {
 		// Creates the closeness map using the jaccard graph
 		//buildClosenessCentrality();
 		
-		ObjectInputStream ois = new ObjectInputStream(new FileInputStream("keywords.ser"));
+		/*ObjectInputStream ois = new ObjectInputStream(new FileInputStream("keywords.ser"));
 		MotCleMap mcm = (MotCleMap) ois.readObject();
 		ois.close();
 		HashMap<String, List<Integer>> keywords;
@@ -202,6 +202,13 @@ public class Jaccard {
 				System.out.print(i + ", ");
 			}
 			System.out.println();
+		}*/
+		
+		ObjectInputStream ois = new ObjectInputStream(new FileInputStream("closeness.ser"));
+		HashMap<Integer, Float> mcm = (HashMap<Integer, Float>) ois.readObject();
+		ois.close();
+		for (Integer i : mcm.keySet()) {
+			System.out.println(i + " -> " + mcm.get(i));
 		}
 		
 	}

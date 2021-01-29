@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.sorbonne.daar.Book;
 import com.sorbonne.daar.DaarApplication;
 import com.sorbonne.daar.controller.DAARController;
 import com.sorbonne.daar.utils.keywords.MotsClesExtractor;
@@ -78,5 +79,16 @@ public class BookService {
 	 */
 	public List<Integer> advancedresearch(String regex) throws Exception {
 		return ProjectEgrep.advancedResearch(regex);
+	}
+	
+	/**
+	 * Get the data of the books in the ids list
+	 */
+	public List<Book> getBookDataFromIdsList(List<Integer> ids) {
+		List<Book> books = new ArrayList<>();
+		for (Integer i : ids) {
+			books.add(DaarApplication.books.get(i));
+		}
+		return books;
 	}
 }
