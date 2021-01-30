@@ -4,12 +4,12 @@ import { Router } from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 
 @Component({
-  selector: 'app-advanced-search',
-  templateUrl: './advanced-search.component.html',  
+  selector: 'app-title-search',
+  templateUrl: './title-search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrls: ['./advanced-search.component.scss']
+  styleUrls: ['./title-search.component.scss']
 })
-export class AdvancedSearchComponent implements OnInit {
+export class TitleSearchComponent implements OnInit {
 
   p: number = 1;
   shouldIDisplayResults: boolean = false;
@@ -33,7 +33,7 @@ export class AdvancedSearchComponent implements OnInit {
 
   onSubmit(form: NgForm): void {
     this.httpClient
-      .get('http://localhost:8081/advancedsearch/' + form.value.search)
+      .get('http://localhost:8081/titlesearch/' + form.value.search)
       .subscribe(
         (response:any) => {
           this.results = response;
@@ -45,7 +45,6 @@ export class AdvancedSearchComponent implements OnInit {
       );
 
   }
-
   goToLink(url: string){
     window.open(url, "_blank");
 }
