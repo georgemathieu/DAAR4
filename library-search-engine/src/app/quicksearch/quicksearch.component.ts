@@ -12,7 +12,7 @@ import {HttpClient} from '@angular/common/http';
 export class QuicksearchComponent implements OnInit {
 
   p: number = 1;
-  shouldIDisplayResults: boolean = false;
+  shouldIDisplayResults: Promise <boolean>;
 
   results = [
     {
@@ -25,7 +25,9 @@ export class QuicksearchComponent implements OnInit {
     }
 ]
 
-  constructor(private router: Router,private httpClient: HttpClient) { }
+  constructor(private router: Router,private httpClient: HttpClient) {
+    this.shouldIDisplayResults = new Promise<boolean> ((resolve, reject) => {});
+   }
 
 
   ngOnInit(): void {
@@ -37,7 +39,7 @@ export class QuicksearchComponent implements OnInit {
       .subscribe(
         (response:any) => {
           this.results = response;
-          this.shouldIDisplayResults = true;
+          this.shouldIDisplayResults = Promise.resolve(true);
         },
         (error) => {
           console.log('Erreur ! : ' + error);
