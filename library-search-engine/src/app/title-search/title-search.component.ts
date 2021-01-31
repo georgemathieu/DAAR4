@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import {HttpClient} from '@angular/common/http';
@@ -25,7 +25,7 @@ export class TitleSearchComponent implements OnInit {
     }
 ]
 
-  constructor(private router: Router,private httpClient: HttpClient) { }
+  constructor(private router: Router,private httpClient: HttpClient,private ngZone: NgZone, private cd: ChangeDetectorRef) { }
 
 
   ngOnInit(): void {
@@ -38,6 +38,7 @@ export class TitleSearchComponent implements OnInit {
         (response:any) => {
           this.results = response;
           this.shouldIDisplayResults = true;
+          this.cd.detectChanges();
         },
         (error) => {
           console.log('Erreur ! : ' + error);

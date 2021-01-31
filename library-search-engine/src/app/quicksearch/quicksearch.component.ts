@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import {HttpClient} from '@angular/common/http';
@@ -12,7 +12,7 @@ import {HttpClient} from '@angular/common/http';
 export class QuicksearchComponent implements OnInit {
 
   p: number = 1;
-  shouldIDisplayResults: Promise <boolean>;
+  shouldIDisplayResults: boolean = false;
 
   results = [
     {
@@ -25,8 +25,7 @@ export class QuicksearchComponent implements OnInit {
     }
 ]
 
-  constructor(private router: Router,private httpClient: HttpClient) {
-    this.shouldIDisplayResults = new Promise<boolean> ((resolve, reject) => {});
+  constructor(private router: Router,private httpClient: HttpClient, private ngZone: NgZone, private cd: ChangeDetectorRef) {
    }
 
 
@@ -39,7 +38,8 @@ export class QuicksearchComponent implements OnInit {
       .subscribe(
         (response:any) => {
           this.results = response;
-          this.shouldIDisplayResults = Promise.resolve(true);
+          this.shouldIDisplayResults = true;
+          this.cd.detectChanges();
         },
         (error) => {
           console.log('Erreur ! : ' + error);
