@@ -1,23 +1,38 @@
 # DAAR4
-M2 STL DAAR project 4
+M2 STL DAAR Project 4 : Moteur de recherche d'une bibliothèque
 
 
 # Setup Spring API
-in "daar" directory : 
+Dans le dossier /daar : 
 * mvn spring-boot:run
+
 L'API se lance sur le port 8081
 
-# Setup complet API
-* sudo apt install python3-pip
-* python3 -m venv myTidyVEnv
-* source myTidyVEnv/bin/activate
-* pip3 install django djangorestframework requests
-* cd TME_webAPI_DAAR/mySearchEngine/
-* python3 manage.py runserver
+# Setup du client
 
-# Lancement de l'API avec environnement fonctionnel
-* source myTidyVEnv/bin/activate
-* cd TME_webAPI_DAAR/mySearchEngine/
-* python3 manage.py runserver
+Dans le dossier /library-search-engine :
+* npm install
+* ng s
 
-L'api se lance sur le port 8000.
+Le site se lance sur le port 4200 : http://localhost/4200
+
+# Setup du client multimachine
+
+In the /library-search-engine :
+* npm install
+* ng s --host 0.0.0.0
+
+Le site est accessible via l'IP dans le réseau local
+
+## Obtenir l'IP à utiliser
+Dans une fenêtre de commande :
+
+* ipconfig
+* Chercher "Adresse IPv4" dans "Carte réseau sans fil Wi-Fi" (format 192.168.x.x)
+* Modifier l'url appelée dans les 4 composants Angular ( http://localhost:4200/basicsearch => http://192.168.x.x:4200/basicsearch )
+
+
+
+
+
+
